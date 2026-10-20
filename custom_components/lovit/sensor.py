@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import date
 from typing import TYPE_CHECKING, Any
 
 from homeassistant.components.sensor import (
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 class LovitSensorEntityDescription(SensorEntityDescription):
     """Describes a Lovit sensor and how its value is derived."""
 
-    value_fn: Callable[[LovitAccountData], float | int | None]
+    value_fn: Callable[[LovitAccountData], float | int | date | None]
     attributes_fn: Callable[[LovitAccountData], dict[str, Any]] | None = None
 
 
@@ -44,9 +45,24 @@ SENSORS: tuple[LovitSensorEntityDescription, ...] = (
         attributes_fn=lambda data: {
             "payment": data.payment,
             "days_to_off": data.days_to_off,
+            "paid_till": (
+                data.paid_till.isoformat() if data.paid_till is not None else None
+            ),
+            "paid_till_type": data.paid_till_type,
+            "frozen": data.frozen,
             "ip": data.ip,
             "subscriptions": [sub.raw for sub in data.subscriptions],
         },
+    ),
+    LovitSensorEntityDescription(
+        key="paid_till",
+        translation_key="paid_till",
+        device_class=SensorDeviceClass.DATE,
+        icon="mdi:calendar-check",
+        value_fn=lambda data: data.paid_till,
+        attributes_fn=lambda data: (
+            {"type": data.paid_till_type} if data.paid_till_type else None
+        ),
     ),
     LovitSensorEntityDescription(
         key="payment",
@@ -93,7 +109,7 @@ class LovitSensor(LovitEntity, SensorEntity):
         self.entity_description = description
 
     @property
-    def native_value(self) -> float | int | None:
+    def native_value(self) -> float | int | date | None:
         """Return the current sensor value."""
         return self.entity_description.value_fn(self.coordinator.data)
 

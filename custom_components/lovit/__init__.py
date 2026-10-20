@@ -11,7 +11,7 @@ from .const import CONF_LOGIN
 from .coordinator import LovitCoordinator
 from .lovit_api import LovitClient
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.SENSOR]
 
 LovitConfigEntry = ConfigEntry[LovitCoordinator]
 

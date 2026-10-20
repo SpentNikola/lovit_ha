@@ -12,6 +12,9 @@
 - Сенсор баланса (`sensor.*_balance`) в рублях с device class `monetary` — его можно вывести
   на Lovelace и использовать в автоматизациях, в том числе «низкий баланс».
 - Сенсор абонентской платы (`payment`) и сенсор «дней до отключения» (`days_to_off`).
+- Сенсор «оплачено до» (`paid_till`) с типом `date`: дата, до которой действует оплата
+  (в атрибуте `type` — как она получена, например `estimated`).
+- Бинарный сенсор «Заморозка услуги» (`frozen`): включён, когда услуга заморожена.
 - В атрибутах баланса — `payment`, `days_to_off`, `ip` и список подключений (`subscriptions`)
   с тарифом, типом и датой старта.
 - Автоматическая повторная авторизация при истечении сессии.
@@ -38,6 +41,7 @@
 └── custom_components/
     └── lovit/
         ├── __init__.py
+        ├── binary_sensor.py
         ├── config_flow.py
         ├── const.py
         ├── coordinator.py
@@ -79,13 +83,18 @@
 | --- | --- | --- |
 | `sensor.lovit_<account>_balance` | Текущий баланс лицевого счёта | ₽ |
 | `sensor.lovit_<account>_payment` | Абонентская плата | ₽ |
+| `sensor.lovit_<account>_paid_till` | Дата, до которой оплачен счёт | дата |
 | `sensor.lovit_<account>_days_to_off` | Дней до отключения (значение API `days_to_off`) | д |
+| `binary_sensor.lovit_<account>_service_frozen` | Услуга заморожена (значение API `frozen`) | вкл/выкл |
 
 Атрибуты сенсора баланса:
 
 ```yaml
 payment: 1100
 days_to_off: 0
+paid_till: "2026-11-22"
+paid_till_type: estimated
+frozen: false
 ip: 95.x.x.97
 subscriptions:
   - sub_id: ""
@@ -100,6 +109,13 @@ subscriptions:
 
 > Значение `days_to_off` отдаётся провайдером как есть. У активных договоров с положительным
 > балансом оно часто равно `0` — это нормально и не означает скорое отключение.
+
+> `paid_till.type = estimated` означает, что дата рассчитана провайдером (прогноз по балансу
+> и абонентской плате), а не подтверждена конкретным платежом. Значение выводится в атрибуте
+> `type` сенсора `paid_till`.
+
+> `frozen: true` — услуга заморожена провайдером; `binary_sensor.*_service_frozen` при этом включён.
+> После разморозки сенсор выключается автоматически при следующем обновлении.
 
 ## Опции
 
@@ -129,6 +145,27 @@ automation:
             абонентская плата {{ state_attr('sensor.lovit_1281217_balance', 'payment') }} ₽.
 ```
 
+### Напоминание об оплате
+
+```yaml
+automation:
+  - alias: "Lovit: напоминание об оплате"
+    trigger:
+      - platform: time
+        at: "10:00:00"
+    condition:
+      - condition: template
+        value_template: >-
+          {{ states('sensor.lovit_1281217_paid_till')
+             == (now() + timedelta(days=3)).date() | string }}
+    action:
+      - service: notify.mobile_app_phone
+        data:
+          message: >
+            Оплата Lovit действует до {{ states('sensor.lovit_1281217_paid_till') }}.
+            Баланс: {{ states('sensor.lovit_1281217_balance') }} ₽.
+```
+
 ### Датчик на панель
 
 ```yaml
@@ -141,6 +178,8 @@ entities:
     name: Абонплата
   - entity: sensor.lovit_1281217_days_to_off
     name: Дней до отключения
+  - entity: sensor.lovit_1281217_paid_till
+    name: Оплачено до
 ```
 
 ## Как это работает

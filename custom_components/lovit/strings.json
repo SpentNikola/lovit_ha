@@ -54,6 +54,14 @@
       },
       "days_to_off": {
         "name": "Days until disconnection"
+      },
+      "paid_till": {
+        "name": "Paid until"
+      }
+    },
+    "binary_sensor": {
+      "frozen": {
+        "name": "Service frozen"
       }
     }
   }

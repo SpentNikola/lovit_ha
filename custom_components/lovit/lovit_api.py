@@ -21,6 +21,7 @@ import json
 import logging
 import re
 from dataclasses import dataclass
+from datetime import date
 from typing import Any
 
 import aiohttp
@@ -89,6 +90,35 @@ def _as_str(value: Any) -> str | None:
     return text or None
 
 
+_BOOL_TRUE = frozenset({"1", "true", "yes", "on", "да"})
+_BOOL_FALSE = frozenset({"0", "false", "no", "off", "нет"})
+
+
+def _as_bool(value: Any) -> bool | None:
+    """Convert an API value (JSON bool, 0/1 or a string) to a bool."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int | float):
+        return bool(value)
+    if isinstance(value, str):
+        text = value.strip().lower()
+        if text in _BOOL_TRUE:
+            return True
+        if text in _BOOL_FALSE:
+            return False
+    return None
+
+
+def _as_date(value: Any) -> date | None:
+    """Convert an ISO date (``YYYY-MM-DD``) from the API to a date object."""
+    if not isinstance(value, str):
+        return None
+    try:
+        return date.fromisoformat(value.strip()[:10])
+    except ValueError:
+        return None
+
+
 def _extract_csrf_token(html: str) -> str | None:
     """Extract the CSRF token from the login page markup."""
     for pattern, value_pattern in (
@@ -152,6 +182,9 @@ class LovitAccountData:
     balance: float | None
     payment: float | None
     days_to_off: int | None
+    paid_till: date | None
+    paid_till_type: str | None
+    frozen: bool | None
     ip: str | None
     subscriptions: list[LovitSubscription]
     raw: dict[str, Any]
@@ -164,11 +197,20 @@ class LovitAccountData:
             for item in payload.get("subs") or []
             if isinstance(item, dict)
         ]
+        paid_till = payload.get("paid_till")
+        paid_till_date: date | None = None
+        paid_till_type: str | None = None
+        if isinstance(paid_till, dict):
+            paid_till_date = _as_date(paid_till.get("date"))
+            paid_till_type = _as_str(paid_till.get("type"))
         return cls(
             login=_as_str(payload.get("login")),
             balance=_as_float(payload.get("balance")),
             payment=_as_float(payload.get("payment")),
             days_to_off=_as_int(payload.get("days_to_off")),
+            paid_till=paid_till_date,
+            paid_till_type=paid_till_type,
+            frozen=_as_bool(payload.get("frozen")),
             ip=_as_str(payload.get("ip")),
             subscriptions=subscriptions,
             raw=_strip_sensitive(payload),

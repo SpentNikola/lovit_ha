@@ -28,6 +28,11 @@ async def async_get_config_entry_diagnostics(
             "balance": data.balance,
             "payment": data.payment,
             "days_to_off": data.days_to_off,
+            "paid_till": (
+                data.paid_till.isoformat() if data.paid_till is not None else None
+            ),
+            "paid_till_type": data.paid_till_type,
+            "frozen": data.frozen,
             "ip": data.ip,
             "subscriptions": [sub.raw for sub in data.subscriptions],
             "raw": data.raw,
