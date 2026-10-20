@@ -1,0 +1,60 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Lovit",
+        "description": "Введите логин и пароль от личного кабинета lk.lovit.ru.",
+        "data": {
+          "login": "Логин (номер договора или телефон)",
+          "password": "Пароль"
+        },
+        "data_description": {
+          "login": "Номер договора или номер телефона, указанный в личном кабинете",
+          "password": "Пароль от личного кабинета lk.lovit.ru"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Повторная авторизация в Lovit",
+        "description": "Сохранённый пароль для {login} больше не принимается. Введите актуальный пароль.",
+        "data": {
+          "password": "Пароль"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Неверный логин или пароль.",
+      "cannot_connect": "Не удалось подключиться к lk.lovit.ru.",
+      "unknown": "Неизвестная ошибка, подробности в логе Home Assistant."
+    },
+    "abort": {
+      "already_configured": "Этот аккаунт Lovit уже добавлен.",
+      "reauth_successful": "Повторная авторизация выполнена успешно."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Настройки Lovit",
+        "data": {
+          "scan_interval": "Интервал обновления (минуты)"
+        },
+        "data_description": {
+          "scan_interval": "Как часто запрашивать баланс на lk.lovit.ru"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Баланс"
+      },
+      "payment": {
+        "name": "Абонентская плата"
+      },
+      "days_to_off": {
+        "name": "Дней до отключения"
+      }
+    }
+  }
+}

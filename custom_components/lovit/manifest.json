@@ -1,0 +1,10 @@
+{
+  "domain": "lovit",
+  "name": "Lovit",
+  "codeowners": [],
+  "config_flow": true,
+  "documentation": "https://lk.lovit.ru",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "version": "0.1.0"
+}

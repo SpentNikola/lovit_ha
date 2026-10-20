@@ -1,0 +1,60 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Lovit",
+        "description": "Enter the credentials you use to sign in at lk.lovit.ru.",
+        "data": {
+          "login": "Login (contract number or phone)",
+          "password": "Password"
+        },
+        "data_description": {
+          "login": "Contract number or phone number used in the personal cabinet",
+          "password": "Password of the lk.lovit.ru personal cabinet"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate with Lovit",
+        "description": "The stored password for {login} is no longer accepted. Enter the current password.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid login or password.",
+      "cannot_connect": "Failed to connect to lk.lovit.ru.",
+      "unknown": "Unexpected error, check the Home Assistant log."
+    },
+    "abort": {
+      "already_configured": "This Lovit account is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Lovit options",
+        "data": {
+          "scan_interval": "Update interval (minutes)"
+        },
+        "data_description": {
+          "scan_interval": "How often to request the balance from lk.lovit.ru"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "balance": {
+        "name": "Balance"
+      },
+      "payment": {
+        "name": "Monthly fee"
+      },
+      "days_to_off": {
+        "name": "Days until disconnection"
+      }
+    }
+  }
+}
